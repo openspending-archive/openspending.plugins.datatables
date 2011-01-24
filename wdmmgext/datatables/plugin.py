@@ -48,16 +48,16 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
 
     def filter(self, stream):
         from pylons import tmpl_context as c 
-        if hasattr(c, 'aggregates') and hasattr(c, 'time'):
-            if len(c.aggregates): 
+        if hasattr(c, 'viewstate') and hasattr(c, 'time'):
+            if len(c.viewstate.aggregates): 
                 columns = {
                     'name': _("Name"), 
-                    'amount': _("Amount (%s)") % c.dataset.get('currency'),
+                    'amount': _("Amount (%s)") % c.viewstate.view.dataset.get('currency'),
                     'percentage': _("Percentage"),
                     'change': _("Change +/-")
                     }
-                rows = self._transform_rows(c.aggregates, 
-                        c.time, c.time_before, c.totals)
+                rows = self._transform_rows(c.viewstate.aggregates, 
+                        c.time, c.time_before, c.viewstate.totals)
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
                 stream = stream | Transformer('html/head')\
                     .append(HTML(HEAD_SNIPPET))
