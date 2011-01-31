@@ -84,7 +84,7 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
                 row['percentage'] = '-'
             before = totals.get(time_before)
             if before is not None and value is not None:
-                change = (float(value)/max(1.0,float(before)) - 1.0) * 100.0
+                change = abs(float(value)-float(before))/max(1.0,float(value)) * 100.0
                 if change > 0:
                     row['change'] = "<span class='growth'>+%.2f%%</span>" % change
                 else:
