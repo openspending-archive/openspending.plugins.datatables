@@ -8,6 +8,7 @@ from pylons.i18n import get_lang, _
 from genshi.filters import Transformer
 from genshi.input import HTML
 
+from wdmmg.model import KeyMeta
 from wdmmg.lib import helpers as h
 from wdmmg.plugins import SingletonPlugin, implements
 from wdmmg.plugins import IGenshiStreamFilter 
@@ -19,13 +20,14 @@ HEAD_SNIPPET = """
 """
 
 TABLE_SNIPPET = """
+<!--h3>Figures by %(breakdown)s</h3---->
 <table cellpadding="0" cellspacing="0" border="0" class="data_table" id="data_table">
     <thead>
         <tr>
             <th>%(name)s</th>
-            <th class="num">%(amount)s</th>
-            <th class="num">%(percentage)s</th>
-            <th class="num">%(change)s</th>
+            <th class="">%(amount)s</th>
+            <th class="">%(percentage)s</th>
+            <th class="">%(change)s</th>
         </tr>
     </thead>
     <tbody>
@@ -50,18 +52,25 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
         from pylons import tmpl_context as c 
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
             if len(c.viewstate.aggregates): 
+                breakdown = c.viewstate.view.breakdown
+                km = KeyMeta.find_one({'key': breakdown, 
+                                       'collection': 'entry',
+                                       'context': c.dataset.name})
+                if km: 
+                    breakdown = km.get('label') or breakdown
                 columns = {
                     'name': _("Name"), 
                     'amount': _("Amount (%s)") % c.viewstate.view.dataset.get('currency'),
                     'percentage': _("Percentage"),
-                    'change': _("Change +/-")
-                    }
+                    'change': _("Change +/-"),
+                    'breakdown': breakdown 
+                }
                 rows = self._transform_rows(c.viewstate.aggregates, 
                         c.time, c.time_before, c.viewstate.totals)
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
                 stream = stream | Transformer('html/head')\
                     .append(HTML(HEAD_SNIPPET))
-                stream = stream | Transformer('//div[@id="description"]')\
+                stream = stream | Transformer('//div[@id="detail"]')\
                     .after(HTML(TABLE_SNIPPET % columns))
         return stream
 
@@ -83,7 +92,7 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
             else:
                 row['percentage'] = '-'
             before = values.get(time_before, 0.0)
-            if value is not None:
+            if (value is not None) and (before):
                 change = ((float(value)-float(before))/max(1.0, float(before))) * 100.0
                 if change > 0:
                     row['change'] = "<span class='growth'>+%.2f%%</span>" % change
