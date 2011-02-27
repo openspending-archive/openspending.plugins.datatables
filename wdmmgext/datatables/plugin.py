@@ -87,13 +87,14 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
             else: 
                 row['amount'] = '-'
             if total is not None and value is not None:
-                share = float(value)/max(1.0,float(total)) * 100.0
+                share = abs(float(value))/max(1.0,abs(float(total))) * 100.0
                 row['percentage'] = "%.2f%%" % share
             else:
                 row['percentage'] = '-'
             before = values.get(time_before, 0.0)
             if (value is not None) and (before):
-                change = ((float(value)-float(before))/max(1.0, float(before))) * 100.0
+                value, before = abs(value), abs(before)
+                change = ((float(value)-float(before))/max(1.0, float(value))) * 100.0
                 if change > 0:
                     row['change'] = "<span class='growth'>+%.2f%%</span>" % change
                 else:
