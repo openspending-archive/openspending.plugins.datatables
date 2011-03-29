@@ -20,7 +20,6 @@ HEAD_SNIPPET = """
 """
 
 TABLE_SNIPPET = """
-<!--h3>Figures by %(breakdown)s</h3---->
 <table cellpadding="0" cellspacing="0" border="0" class="data_table" id="data_table">
     <thead>
         <tr>
@@ -94,8 +93,8 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
             before = values.get(time_before, 0.0)
             if (value is not None) and (before):
                 value, before = abs(value), abs(before)
-                change = ((float(value)-float(before))/max(1.0, float(value))) * 100.0
-                if change > 0:
+                change = (min(value, before)/max(1.0, value, before)) * 100.0
+                if value >= before:
                     row['change'] = "<span class='growth'>+%.2f%%</span>" % change
                 else:
                     row['change'] = "<span class='shrink'>%.2f%%</span>" % change
