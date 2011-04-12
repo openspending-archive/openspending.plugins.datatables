@@ -8,7 +8,7 @@ from pylons.i18n import get_lang, _
 from genshi.filters import Transformer
 from genshi.input import HTML
 
-from wdmmg.model import KeyMeta
+from wdmmg.model import Dimension
 from wdmmg.lib import helpers as h
 from wdmmg.plugins import SingletonPlugin, implements
 from wdmmg.plugins import IGenshiStreamFilter 
@@ -52,9 +52,8 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
             if len(c.viewstate.aggregates): 
                 breakdown = c.viewstate.view.breakdown
-                km = KeyMeta.find_one({'key': breakdown, 
-                                       'collection': 'entry',
-                                       'context': c.dataset.name})
+                km = Dimension.find_one({'key': breakdown, 
+                                         'dataset': c.dataset.name})
                 if km: 
                     breakdown = km.get('label') or breakdown
                 columns = {
