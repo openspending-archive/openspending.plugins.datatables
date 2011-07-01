@@ -51,7 +51,7 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
         from pylons import tmpl_context as c 
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
             if len(c.viewstate.aggregates): 
-                breakdown = c.viewstate.view.breakdown
+                breakdown = c.viewstate.view.drilldown
                 km = Dimension.find_one({'key': breakdown, 
                                          'dataset': c.dataset.name})
                 if km: 
