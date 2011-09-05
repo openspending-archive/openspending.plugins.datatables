@@ -1,0 +1,3 @@
+[openspending.plugins]
+datatables = openspending.plugins.datatables:DataTablesPlugin
+

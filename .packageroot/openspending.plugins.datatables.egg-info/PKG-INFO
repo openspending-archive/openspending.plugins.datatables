@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: openspending.plugins.datatables
+Version: 0.2
+Summary: OpenSpending Data Tables
+Home-page: http://github.com/okfn/openspending.plugins.datatables
+Author: Open Knowledge Foundation
+Author-email: okfn-help at lists okfn org
+License: GPL v3
+Description: UNKNOWN
+Keywords: openspending openspending-plugin datatables
+Platform: UNKNOWN

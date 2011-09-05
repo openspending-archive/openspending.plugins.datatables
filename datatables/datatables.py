@@ -1,17 +1,18 @@
-try:
-    import json 
-except ImportError:
-    import simplejson as json
+import pkg_resources
 
-from pprint import pprint
+from pylons import config
 from pylons.i18n import get_lang, _
+from paste.cascade import Cascade
+from paste.urlparser import StaticURLParser
+from paste.deploy.converters import asbool
 from genshi.filters import Transformer
 from genshi.input import HTML
 
-from wdmmg.model import Dimension
-from wdmmg.lib import helpers as h
-from wdmmg.plugins import SingletonPlugin, implements
-from wdmmg.plugins import IGenshiStreamFilter 
+from openspending import model
+from openspending.lib import json
+from openspending.ui.lib import helpers as h
+from openspending.plugins.core import SingletonPlugin, implements
+from openspending.plugins.interfaces import IMiddleware, IGenshiStreamFilter
 
 HEAD_SNIPPET = """
 <link rel="stylesheet" type="text/css" href="/css/data_tables.css" />
@@ -35,7 +36,7 @@ TABLE_SNIPPET = """
 </table>
 """
 
-ROW_SNIPPET = """ 
+ROW_SNIPPET = """
         <tr>
             <td>%(name)s</td>
             <td class="num">%(amount)s</td>
@@ -44,27 +45,44 @@ ROW_SNIPPET = """
         </tr>
 """
 
-class DataTablesGenshiStreamFilter(SingletonPlugin):
+class DataTablesPlugin(SingletonPlugin):
     implements(IGenshiStreamFilter, inherit=True)
+    implements(IMiddleware, inherit=True)
+
+    def setup_middleware(self, app):
+        if not isinstance(app, Cascade):
+            log.warn("DataTablesPlugin expected the app to be a Cascade "
+                     "object, but it wasn't. Not adding public paths for "
+                     "Datatables, so it probably won't work!")
+            return app
+
+        max_age = None if asbool(config['debug']) else 3600
+        public = pkg_resources.resource_filename(__name__, 'public')
+
+        static_app = StaticURLParser(public, cache_max_age=max_age)
+
+        app.apps.insert(0, static_app)
+
+        return app
 
     def filter(self, stream):
-        from pylons import tmpl_context as c 
+        from pylons import tmpl_context as c
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
-            if len(c.viewstate.aggregates): 
+            if len(c.viewstate.aggregates):
                 breakdown = c.viewstate.view.drilldown
-                km = Dimension.find_one({'key': breakdown, 
-                                         'dataset': c.dataset.name})
-                if km: 
+                km = model.dimension.find_one({'key': breakdown,
+                                               'dataset': c.dataset['name']})
+                if km:
                     breakdown = km.get('label') or breakdown
                 columns = {
-                    'name': _("Name"), 
+                    'name': _("Name"),
                     'amount': _("Amount (%s)") % c.viewstate.view.dataset.get('currency'),
                     'percentage': _("Percentage"),
                     'change': _("Change +/-"),
-                    'breakdown': breakdown 
+                    'breakdown': breakdown
                 }
-                rows = self._transform_rows(c.viewstate.aggregates, 
-                        c.time, c.time_before, c.viewstate.totals)
+                rows = self._transform_rows(c.viewstate.aggregates, c.time,
+                                            c.time_before, c.viewstate.totals)
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
                 stream = stream | Transformer('html/head')\
                     .append(HTML(HEAD_SNIPPET))
@@ -76,13 +94,13 @@ class DataTablesGenshiStreamFilter(SingletonPlugin):
         rows = []
         total = totals.get(time)
         #total_before = totals.get(time_before)
-        for obj, values in aggregates: 
+        for obj, values in aggregates:
             row = {}
             row['name'] = h.dimension_link(obj)
             value = values.get(time)
             if value is not None:
                 row['amount'] = h.format_number_with_commas(value)
-            else: 
+            else:
                 row['amount'] = '-'
             if total is not None and value is not None:
                 share = abs(float(value))/max(1.0,abs(float(total))) * 100.0

@@ -1,0 +1,13 @@
+setup.cfg
+.packageroot/openspending/__init__.py
+.packageroot/openspending.plugins.datatables.egg-info/PKG-INFO
+.packageroot/openspending.plugins.datatables.egg-info/SOURCES.txt
+.packageroot/openspending.plugins.datatables.egg-info/dependency_links.txt
+.packageroot/openspending.plugins.datatables.egg-info/entry_points.txt
+.packageroot/openspending.plugins.datatables.egg-info/namespace_packages.txt
+.packageroot/openspending.plugins.datatables.egg-info/not-zip-safe
+.packageroot/openspending.plugins.datatables.egg-info/requires.txt
+.packageroot/openspending.plugins.datatables.egg-info/top_level.txt
+.packageroot/openspending/plugins/__init__.py
+.packageroot/openspending/plugins/datatables/__init__.py
+.packageroot/openspending/plugins/datatables/datatables.py

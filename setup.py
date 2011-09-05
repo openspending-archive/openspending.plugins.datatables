@@ -1,38 +1,34 @@
 from setuptools import setup, find_packages
 import sys, os
 
-from wdmmgext.datatables import __version__
+from datatables import __version__
 
-setup(name='wdmmg-datatables',
-      version=__version__,
-      description="Where Does My Money Go? Data Tables",
-      long_description="",
-      classifiers=[], 
-      keywords='wdmmg datatables js jquery',
-      author='Open Knowledge Foundation',
-      author_email='info@okfn.org',
-      url='http://www.okfn.org',
-      license='GPL v3',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-      include_package_data=True,
-      namespace_packages=['wdmmgext'],
-      zip_safe=False,
-      message_extractors = {
-            'wdmmgext/datatables': [
-                ('**.py', 'python', None)
-                ],
-            'theme': [
-                ('templates/**.html', 'genshi', None),
-                ('public/**', 'ignore', None)
-                ],
-            },
-      install_requires=[
-          # -*- Extra requirements: -*-
-      ],
-      entry_points="""
-      # -*- Entry points: -*-
-      
-      [wdmmg.plugins]
-      datatables = wdmmgext.datatables:DataTablesGenshiStreamFilter
-      """,
-      )
+setup(
+    name='openspending.plugins.datatables',
+    version=__version__,
+    description='OpenSpending Data Tables',
+    keywords='openspending openspending-plugin datatables',
+    author='Open Knowledge Foundation',
+    author_email='okfn-help at lists okfn org',
+    url='http://github.com/okfn/openspending.plugins.datatables',
+    license='GPL v3',
+    install_requires=[
+        'openspending'
+    ],
+    packages=find_packages('.packageroot'),
+    package_dir={'': '.packageroot'},
+    namespace_packages=['openspending', 'openspending.plugins'],
+    include_package_data=True,
+    message_extractors = {
+        'datatables': [
+            ('**.py', 'python', None),
+            ('public/**', 'ignore', None)
+        ]
+    },
+    entry_points={
+        'openspending.plugins': [
+            'datatables = openspending.plugins.datatables:DataTablesPlugin'
+        ]
+    },
+    zip_safe=False
+)
