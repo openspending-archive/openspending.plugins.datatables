@@ -69,20 +69,20 @@ class DataTablesPlugin(SingletonPlugin):
         from pylons import tmpl_context as c
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
             if len(c.viewstate.aggregates):
-                breakdown = c.viewstate.view.drilldown
-                km = model.dimension.find_one({'key': breakdown,
-                                               'dataset': c.dataset['name']})
-                if km:
-                    breakdown = km.get('label') or breakdown
+                breakdown = c.view.drilldown
+                dimension = c.dataset[breakdown]
+                breakdown = dimension.label or breakdown
+
                 columns = {
                     'name': _("Name"),
-                    'amount': _("Amount (%s)") % c.viewstate.view.dataset.get('currency'),
+                    'amount': _("Amount (%s)") % c.view.dataset.currency,
                     'percentage': _("Percentage"),
                     'change': _("Change +/-"),
                     'breakdown': breakdown
                 }
-                rows = self._transform_rows(c.viewstate.aggregates, c.time,
-                                            c.time_before, c.viewstate.totals)
+                rows = self._transform_rows(c.viewstate.aggregates,
+                        c.dataset.name, dimension, c.time,
+                        c.time_before, c.viewstate.totals)
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
                 stream = stream | Transformer('html/head')\
                     .append(HTML(HEAD_SNIPPET))
@@ -90,13 +90,14 @@ class DataTablesPlugin(SingletonPlugin):
                     .after(HTML(TABLE_SNIPPET % columns))
         return stream
 
-    def _transform_rows(self, aggregates, time, time_before, totals):
+    def _transform_rows(self, aggregates, dataset, dimension, time, 
+            time_before, totals):
         rows = []
         total = totals.get(time)
         #total_before = totals.get(time_before)
         for obj, values in aggregates:
             row = {}
-            row['name'] = h.dimension_link(obj)
+            row['name'] = h.dimension_link(dataset, dimension, obj)
             value = values.get(time)
             if value is not None:
                 row['amount'] = h.format_number_with_commas(value)
