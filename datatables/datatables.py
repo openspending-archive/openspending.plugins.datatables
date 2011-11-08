@@ -16,6 +16,9 @@ from openspending.plugins.interfaces import IMiddleware, IGenshiStreamFilter
 
 HEAD_SNIPPET = """
 <link rel="stylesheet" type="text/css" href="/css/data_tables.css" />
+"""
+
+JS_SNIPPET = """
 <script src="/js/jquery.dataTables.min.js"></script>
 <script src="/js/datatables.js"></script>
 """
@@ -86,6 +89,8 @@ class DataTablesPlugin(SingletonPlugin):
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
                 stream = stream | Transformer('html/head')\
                     .append(HTML(HEAD_SNIPPET))
+                stream = stream | Transformer('html/body')\
+                    .append(HTML(JS_SNIPPET))
                 stream = stream | Transformer('//div[@id="detail"]')\
                     .after(HTML(TABLE_SNIPPET % columns))
         return stream
@@ -97,7 +102,7 @@ class DataTablesPlugin(SingletonPlugin):
         #total_before = totals.get(time_before)
         for obj, values in aggregates:
             row = {}
-            row['name'] = h.dimension_link(dataset, dimension, obj)
+            row['name'] = h.dimension_link(dataset, dimension.name, obj)
             value = values.get(time)
             if value is not None:
                 row['amount'] = h.format_number_with_commas(value)
