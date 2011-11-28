@@ -1,15 +1,14 @@
 import pkg_resources
+import logging
 
 from pylons import config
-from pylons.i18n import get_lang, _
+from pylons.i18n import _
 from paste.cascade import Cascade
 from paste.urlparser import StaticURLParser
 from paste.deploy.converters import asbool
 from genshi.filters import Transformer
 from genshi.input import HTML
 
-from openspending import model
-from openspending.lib import json
 from openspending.ui.lib import helpers as h
 from openspending.plugins.core import SingletonPlugin, implements
 from openspending.plugins.interfaces import IMiddleware, IGenshiStreamFilter
@@ -38,6 +37,8 @@ TABLE_SNIPPET = """
     </tbody>
 </table>
 """
+
+log = logging.getLogger(__name__)
 
 ROW_SNIPPET = """
         <tr>
