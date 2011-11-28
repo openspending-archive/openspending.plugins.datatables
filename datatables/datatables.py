@@ -106,8 +106,10 @@ class DataTablesPlugin(SingletonPlugin):
             value = values.get(time)
             if value is not None:
                 row['amount'] = h.format_number_with_commas(value)
+                row['value'] = value
             else:
                 row['amount'] = '-'
+                row['value'] = 0
             if total is not None and value is not None:
                 share = abs(float(value))/max(1.0,abs(float(total))) * 100.0
                 row['percentage'] = "%.2f%%" % share
@@ -123,6 +125,6 @@ class DataTablesPlugin(SingletonPlugin):
             else:
                 row['change'] = '-'
             rows.append(row)
-        return rows
+        return sorted(rows, key=lambda k: k['value'])
 
 
