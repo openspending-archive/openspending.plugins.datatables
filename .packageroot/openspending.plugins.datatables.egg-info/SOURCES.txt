@@ -1,4 +1,5 @@
 setup.cfg
+setup.py
 .packageroot/openspending/__init__.py
 .packageroot/openspending.plugins.datatables.egg-info/PKG-INFO
 .packageroot/openspending.plugins.datatables.egg-info/SOURCES.txt

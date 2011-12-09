@@ -13,23 +13,23 @@ from openspending.ui.lib import helpers as h
 from openspending.plugins.core import SingletonPlugin, implements
 from openspending.plugins.interfaces import IMiddleware, IGenshiStreamFilter
 
-HEAD_SNIPPET = """
-<link rel="stylesheet" type="text/css" href="/css/data_tables.css" />
-"""
-
 JS_SNIPPET = """
-<script src="/js/jquery.dataTables.min.js"></script>
-<script src="/js/datatables.js"></script>
+<script src="/jstables/jquery.tablesorter.min.js"></script>
+<script>
+    $(function() {
+        $("table#data-table").tablesorter({ sortList: [[2,1]] });
+    });
+</script>
 """
 
 TABLE_SNIPPET = """
-<table cellpadding="0" cellspacing="0" border="0" class="data_table" id="data_table">
+<table cellpadding="0" cellspacing="0" border="0" class="zebra-striped" id="data-table">
     <thead>
         <tr>
             <th>%(name)s</th>
-            <th class="">%(amount)s</th>
-            <th class="">%(percentage)s</th>
-            <th class="">%(change)s</th>
+            <th class="num">%(amount)s</th>
+            <th class="num">%(percentage)s</th>
+            <th class="num">%(change)s</th>
         </tr>
     </thead>
     <tbody>
@@ -73,23 +73,17 @@ class DataTablesPlugin(SingletonPlugin):
         from pylons import tmpl_context as c
         if hasattr(c, 'viewstate') and hasattr(c, 'time'):
             if len(c.viewstate.aggregates):
-                breakdown = c.view.drilldown
-                dimension = c.dataset[breakdown]
-                breakdown = dimension.label or breakdown
-
+                dimension = c.dataset[c.view.drilldown]
                 columns = {
                     'name': _("Name"),
                     'amount': _("Amount (%s)") % c.view.dataset.currency,
                     'percentage': _("Percentage"),
-                    'change': _("Change +/-"),
-                    'breakdown': breakdown
+                    'change': _("Change +/-")
                 }
                 rows = self._transform_rows(c.viewstate.aggregates,
                         c.dataset.name, dimension, c.time,
                         c.time_before, c.viewstate.totals)
                 columns['rows'] = "\n".join([ROW_SNIPPET % row for row in rows])
-                stream = stream | Transformer('html/head')\
-                    .append(HTML(HEAD_SNIPPET))
                 stream = stream | Transformer('html/body')\
                     .append(HTML(JS_SNIPPET))
                 stream = stream | Transformer('//div[@id="detail"]')\
@@ -100,7 +94,6 @@ class DataTablesPlugin(SingletonPlugin):
             time_before, totals):
         rows = []
         total = totals.get(time)
-        #total_before = totals.get(time_before)
         for obj, values in aggregates:
             row = {}
             row['name'] = h.dimension_link(dataset, dimension.name, obj)
@@ -120,12 +113,12 @@ class DataTablesPlugin(SingletonPlugin):
             if (value is not None) and before > 0:
                 change = ((value - before)/before) * 100
                 if value >= before:
-                    row['change'] = "<span class='growth'>+%.2f%%</span>" % change
+                    row['change'] = "<span class='growth'>%.2f%%</span>" % change
                 else:
                     row['change'] = "<span class='shrink'>%.2f%%</span>" % change
             else:
                 row['change'] = '-'
             rows.append(row)
-        return sorted(rows, key=lambda k: k['value'])
+        return sorted(rows, key=lambda k: -1 * k['value'])
 
 
