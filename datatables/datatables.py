@@ -23,7 +23,7 @@ JS_SNIPPET = """
 """
 
 TABLE_SNIPPET = """
-<table cellpadding="0" cellspacing="0" border="0" class="zebra-striped" id="data-table">
+<table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-condensed" id="data-table">
     <thead>
         <tr>
             <th>%(name)s</th>
