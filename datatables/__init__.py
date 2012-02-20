@@ -1,3 +1,2 @@
-__version__ = '0.2'
-
+from datatables.version import __version__
 from .datatables import DataTablesPlugin

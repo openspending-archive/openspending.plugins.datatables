@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-from datatables import __version__
+execfile('datatables/version.py')
 
 setup(
     name='openspending.plugins.datatables',
